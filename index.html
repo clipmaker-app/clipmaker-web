@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ClipMaker - Tu Dominio</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">Clip<span>Maker</span> <small>Tu Dominio</small></div>
+  <div class="top-right" id="topRight" hidden>
+    <span class="pill-badge" id="roleBadge">SUSCRIPTOR</span>
+    <span class="pill-badge ok" id="backendBadge">Backend: Conectado</span>
+    <button class="btn-dark" id="logoutBtn">Cerrar sesión</button>
+  </div>
+</header>
+
+<main>
+  <!-- ACCESO -->
+  <section class="card" id="authView">
+    <h1>ClipMaker</h1>
+    <p class="muted">Entra para sacar clips automáticos de tus videos y en vivos.</p>
+    <div class="row">
+      <button class="chip active" id="tabLogin">Iniciar sesión</button>
+      <button class="chip" id="tabRegister">Crear cuenta</button>
+    </div>
+    <div id="nameWrap" hidden>
+      <label for="name">Nombre</label>
+      <input id="name" type="text" placeholder="Tu nombre">
+    </div>
+    <label for="email">Correo electrónico</label>
+    <input id="email" type="email" placeholder="tucorreo@gmail.com">
+    <label for="pass">Contraseña</label>
+    <input id="pass" type="password" placeholder="Mínimo 4 caracteres">
+    <button class="btn-main" id="authBtn">Iniciar sesión</button>
+    <p class="muted center" id="authMsg"></p>
+  </section>
+
+  <!-- APP -->
+  <div id="appView" hidden>
+    <section class="card welcome">
+      <div>
+        <h1>Hola, <span id="userName"></span> 👋</h1>
+        <p class="muted" id="userEmail"></p>
+      </div>
+      <div class="owner-circle" id="ownerCircle">SUSCRIPTOR</div>
+      <div class="plan-box" id="planBox">
+        <strong id="planTitle"></strong>
+        <p id="planText"></p>
+        <div class="bar"><i id="planBar"></i></div>
+      </div>
+    </section>
+
+    <nav class="row tabs">
+      <button class="chip active" data-tab="clip">✂️ ClipMaker</button>
+      <button class="chip" data-tab="sub">💳 Suscripción</button>
+      <button class="chip owner-only" data-tab="panel">📊 Panel</button>
+      <button class="chip" data-tab="domain">🌐 Mi Dominio</button>
+    </nav>
+
+    <!-- TAB CLIPMAKER -->
+    <div id="tab-clip" class="tab">
+      <section class="hero">
+        <h2 class="hero-title">Convierte un video largo en clips listos para publicar</h2>
+        <div class="hero-box">
+          <div class="hero-input">
+            <span class="hero-ico">🔗</span>
+            <input id="link" type="text" placeholder="Pega un enlace de YouTube, Facebook, TikTok o un .mp4">
+            <button class="hero-go" id="genBest" type="button">⚡ Obtén clips en 1 clic</button>
+          </div>
+          <div class="hero-actions">
+            <button class="link-btn" id="pickFile" type="button">📁 Subir video</button>
+            <button class="link-btn" id="previewBtn" type="button">👀 Vista previa</button>
+            <button class="link-btn" id="genAll" type="button">🚀 Repartir clips parejo</button>
+          </div>
+          <input id="file" type="file" accept="video/*" hidden>
+        </div>
+        <div class="opts">
+          <label class="opt"><input type="checkbox" id="subs" checked><span>📝 Subtítulos</span></label>
+          <label class="opt"><input type="checkbox" id="vert" checked><span>📱 Vertical 9:16</span></label>
+        </div>
+        <label class="check hero-rights"><input type="checkbox" id="rights"> <span>Confirmo que este contenido es mío o tengo permiso para usarlo (obligatorio para enlaces).</span></label>
+        <p class="muted center small">⚡ busca solos los mejores momentos (los más emocionantes). Subtítulos y vertical funcionan con enlaces.</p>
+      </section>
+
+      <section class="card">
+        <h2>Ajustes</h2>
+        <label>Duración de cada clip</label>
+        <div class="row" id="durations"></div>
+        <label>¿Cuántos clips quieres?</label>
+        <div class="row" id="counts"></div>
+        <label for="qty">O escribe una cantidad (1-10)</label>
+        <input id="qty" type="number" min="1" max="10" value="2">
+      </section>
+
+      <section class="card">
+        <h2>Tus clips</h2>
+        <p class="muted" id="genMsg">Pega un enlace arriba y pulsa «Obtén clips en 1 clic». Los clips aparecen aquí abajo.</p>
+        <div id="preview"></div>
+        <div id="results" class="results"></div>
+      </section>
+    </div>
+
+    <!-- TAB SUSCRIPCION -->
+    <div id="tab-sub" class="tab" hidden>
+      <section class="card">
+        <h2>💳 Suscripción - Solo Criptomonedas</h2>
+        <p class="muted">Solo cripto. Sin tarjeta, sin PayPal, sin transferencia. Así te llega el dinero directo a tu wallet.</p>
+        <button class="btn-dark" id="shareSub">🔗 Compartir enlace de suscripción</button>
+        <h3>📊 Límites mensuales - ¿Por qué hay límites?</h3>
+        <p class="muted">Cada clip gasta procesamiento del servidor. Si fuera ilimitado para todos, se cae. Por eso cada plan tiene su cantidad por mes, y se renueva cada mes.</p>
+        <table id="planTable"></table>
+        <div class="plans" id="planCards"></div>
+        <p class="muted" id="chosen">Plan elegido: Gratis - 2 clips</p>
+        <div class="pay">
+          <h3>₿ Pagar Solo con Criptomonedas</h3>
+          <p class="muted">1. Elige tu moneda • 2. Copia la dirección • 3. Envía el monto exacto • 4. Pega tu hash / TXID abajo y dale a Ya pagué. El dueño lo ve y te activa.</p>
+          <div class="row" id="coins"></div>
+          <label id="addrLabel"></label>
+          <div class="addr" id="addr"></div>
+          <button class="btn-dark" id="copyAddr">📋 Copiar dirección</button>
+          <label for="refund">Tu wallet para devolución si hay error</label>
+          <input id="refund" type="text" placeholder="Pega tu dirección de wallet">
+          <label for="txid">Hash / TXID de tu pago (lo copias de tu billetera después de enviar)</label>
+          <input id="txid" type="text" placeholder="Ej. 0x1234... o 8f2a...">
+          <label for="amount">Monto</label>
+          <input id="amount" type="text" value="$0 - Gratis" readonly>
+          <p class="muted" id="netNote"></p>
+          <button class="btn-main" id="paidBtn">✅ Ya pagué con Cripto - Enviar comprobante al dueño</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- TAB PANEL (DUEÑO) -->
+    <div id="tab-panel" class="tab" hidden>
+      <section class="card">
+        <h2>📊 Panel del Dueño - Solo tú lo ves</h2>
+        <p class="muted">Aquí ves a tus suscriptores reales, sus perfiles, sus pagos con cripto y cuándo te llega el dinero. Nadie más ve esto.</p>
+        <div class="stats">
+          <div><b id="stSubs">0</b>Suscriptores reales</div>
+          <div><b id="stPays">0</b>Pagos con cripto</div>
+          <div><b id="stClips">0</b>Clips generados</div>
+          <div><b id="stMoney">$0</b>Dinero recibido (pendiente de confirmar)</div>
+        </div>
+        <label for="search">Buscar suscriptor</label>
+        <input id="search" type="text" placeholder="Buscar por nombre o correo...">
+        <div class="row" id="filters"></div>
+      </section>
+      <section class="card">
+        <h2>💰 Pagos con Cripto que te llegaron</h2>
+        <p class="muted">Cuando un suscriptor paga, aquí te sale su TXID. Tú lo verificas en tu billetera y le das a Aprobar para activarle el plan.</p>
+        <div id="payList"></div>
+      </section>
+      <section class="card">
+        <h2>👥 Perfiles de mis suscriptores</h2>
+        <div id="userList"></div>
+      </section>
+      <section class="card">
+        <h2>⚙️ Configuración del Dueño - Tus Wallets Reales</h2>
+        <p class="muted">Pon aquí tus direcciones reales. Los suscriptores van a copiar estas direcciones para pagarte. Si no las cambias, siguen las de ejemplo.</p>
+        <div id="walletForm"></div>
+                <button class="btn-main" id="saveCfg">💾 Guardar mis wallets reales</button>
+      </section>
+    </div>
+
+    <!-- TAB DOMINIO -->
+    <div id="tab-domain" class="tab" hidden>
+      <section class="card">
+        <h2>🌐 Tu Dominio Propio - Salir de Meta</h2>
+        <p class="muted">Haz esto una sola vez para tener tu página con tu propio dominio:</p>
+        <div class="steps">
+          <p><b>1. Compra tu dominio:</b> Entra a <b>Namecheap.com</b> o <b>GoDaddy.com</b> y compra <b>clipmaker.com</b> o <b>clipmaker.app</b>. Cuesta como $8-$12 al año.</p>
+          <p><b>2. Sube esta página:</b> Entra a <b>app.netlify.com/drop</b> (es gratis) y arrastra la carpeta con <b>index.html</b>, <b>styles.css</b> y <b>script.js</b>.</p>
+          <p><b>3. Conecta tu dominio:</b> En Netlify ve a <b>Domain settings → Add a domain</b> y pon el dominio que compraste. En unos minutos ya es <b>https://tudominio.com</b>.</p>
+          <p><b>4. Listo:</b> Manda tu dominio a tus suscriptores. Todos crean cuenta ahí y tú ves sus pagos y perfiles en tu Panel.</p>
+        </div>
+        <p class="muted"><a href="terms.html" target="_blank" style="color:var(--y)">Términos de uso y privacidad</a></p>
+        <button class="btn-main" id="copyPage">🔗 Copiar enlace de mi página para compartir</button>
+      </section>
+    </div>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
+<script src="script.js"></script>
+</body>
+</html>
