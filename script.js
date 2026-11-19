@@ -234,7 +234,7 @@ async function generateFromLink(best = false) {
       if (job.warn && !shownWarn) { shownWarn = true; toast(job.warn); }
       if (job.status === 'error') finish('No se pudo: ' + job.error + (shown ? '' : ' Los clips no usados se te devolvieron.'));
       else if (job.status === 'done' && shown >= Math.min(job.ready, job.wanted)) finish(`Listo ✅ ${shown} clip(s). Descárgalos: el servidor los borra en 1 hora.`);
-      else $('#genMsg').textContent = `Cortando... ${shown} de ${job.wanted} listos.`;
+      else $('#genMsg').textContent = (job.stage ? job.stage + ' ' : '') + `(${shown} de ${job.wanted} clips listos)`;
     } catch (e) { if (e.status === 401 || e.status === 404) finish(e.message); }
     busy = false;
   }, 4000);
@@ -262,11 +262,16 @@ async function openEditor(card) {
   try { [info, src] = await Promise.all([api(`/api/jobs/${id}/clip/${n}/info`), fetchBlob(`/api/jobs/${id}/clip/${n}/source`)]); }
   catch (e) { close(); return toast(e.message); }
   const L = info.rawLen || 30; let a = 0, b = L, cx = 0.5;
+  const S = { ...(info.style || {}) };   // estilo actual (color, tamaño, posición del subtítulo y color del video)
+  const LOOKS = [['none', 'Original'], ['vivid', '🔥 Vivo'], ['bw', '⚫ Blanco y negro'], ['warm', '🌅 Cálido'], ['cool', '❄️ Frío'], ['cine', '🎬 Cine']];
+  const LOOK_CSS = { none: '', vivid: 'saturate(1.35) contrast(1.08)', bw: 'grayscale(1)', warm: 'sepia(.3) saturate(1.1)', cool: 'hue-rotate(-12deg) saturate(1.05)', cine: 'contrast(1.15) saturate(.8)' };
   const f1 = v => (Math.round(v * 10) / 10).toFixed(1);
   $('#editModal .modal-box').innerHTML = `
     <h2>✏️ Editar clip ${n + 1}</h2>
-    <div class="ed-stage" id="edStage"><video id="edVid" src="${src}" controls playsinline></video>${info.vertical ? '<div class="ed-frame" id="edFrame"></div>' : ''}</div>
+    <div class="ed-grid"><div class="ed-left">
+    <div class="ed-stage${info.vertical ? ' v' : ''}" id="edStage"><video id="edVid" src="${src}" controls playsinline></video>${info.vertical ? '<div class="ed-frame" id="edFrame"></div>' : ''}${info.hasSubs ? '<div class="ed-sub" id="edSub"></div>' : ''}</div>
     ${info.vertical ? '<p class="muted">El recuadro es lo que se verá en el clip vertical.</p>' : ''}
+    </div><div class="ed-right">
     <label>Inicio: <b id="aTxt"></b> s</label><input type="range" id="aR" min="0" max="${L}" step="0.1" value="0">
     <label>Fin: <b id="bTxt"></b> s</label><input type="range" id="bR" min="0" max="${L}" step="0.1" value="${L}">
     <div class="row"><button class="btn-dark" id="setA">⏮ Inicio aquí</button><button class="btn-dark" id="setB">⏭ Fin aquí</button><button class="btn-dark" id="prev">▶ Ver recorte</button></div>
@@ -274,8 +279,24 @@ async function openEditor(card) {
     <label>Subtítulos</label>
     <div id="cuesBox">${info.cues.length ? info.cues.map((c, i) => `<div class="cue"><span class="muted">${f1(c.start)}–${f1(c.end)}s</span><input type="text" data-c="${i}" maxlength="200" value="${esc(c.text)}"></div>`).join('')
       : `<p class="muted">${info.hasSubs ? 'No se detectó texto en este clip.' : 'Este clip no tiene subtítulos.'}</p>`}</div>
+    ${info.hasSubs ? `<h3 class="ed-h">🎨 Estilo del subtítulo</h3>
+    <div class="row ed-row">
+      <label class="ed-in">Color <input type="color" id="sColor"></label>
+      <label class="ed-in">Borde <input type="color" id="sOut"></label>
+      <label class="ed-in">Lado <select id="sAlign"><option value="left">⬅ Izquierda</option><option value="center">⬛ Centro</option><option value="right">➡ Derecha</option></select></label>
+    </div>
+    <label>Tamaño: <b id="sSizeT"></b></label><input type="range" id="sSize" min="0.5" max="2.5" step="0.05">
+    <label>Altura (abajo ↔ arriba)</label><input type="range" id="sY" min="0.03" max="0.92" step="0.01">` : ''}
+    <h3 class="ed-h">🌈 Color del video</h3>
+    <div class="row" id="looks">${LOOKS.map(([k, t]) => `<button class="chip" data-look="${k}">${t}</button>`).join('')}</div>
+    <label>Brillo</label><input type="range" id="cBri" min="-0.3" max="0.3" step="0.01">
+    <label>Contraste</label><input type="range" id="cCon" min="0.7" max="1.5" step="0.01">
+    <label>Saturación (color)</label><input type="range" id="cSat" min="0" max="2" step="0.01">
+    <div class="row"><button class="btn-dark" id="cReset">↺ Quitar colores</button></div>
+    <p class="muted">La vista previa es aproximada: el resultado final lo ves al aplicar los cambios.</p>
     <div class="row"><button class="btn-main" id="edApply" style="width:auto;margin:0;padding:14px 22px">✅ Aplicar cambios</button><button class="btn-dark" id="edClose">Cancelar</button></div>
-    <p class="muted" id="edMsg"></p>`;
+    <p class="muted" id="edMsg"></p>
+    </div></div>`;
   const vid = $('#edVid'), frame = $('#edFrame');
   const paint = () => {
     $('#aTxt').textContent = f1(a); $('#bTxt').textContent = f1(b);
@@ -283,8 +304,30 @@ async function openEditor(card) {
       const w = (9 / 16) / (vid.videoWidth / vid.videoHeight) * 100;
       frame.style.width = w + '%'; frame.style.left = ((100 - w) * cx) + '%';
     }
+    if (typeof paintSub === 'function') paintSub();
   };
-  vid.addEventListener('loadedmetadata', paint); paint();
+  const sub = $('#edSub');
+  const paintSub = () => {          // vista previa aproximada del subtítulo y del color
+    vid.style.filter = `${LOOK_CSS[S.look] || ''} brightness(${1 + S.bright}) contrast(${S.contrast}) saturate(${S.sat})`.trim();
+    if (!sub) return;
+    const H = $('#edStage').clientHeight, W = $('#edStage').clientWidth;
+    const left = frame ? frame.offsetLeft : 0, width = frame ? frame.offsetWidth : W, fs = Math.max(8, H * (info.vertical ? 12 : 14) * S.subSize / 288);
+    Object.assign(sub.style, { left: left + 'px', width: width + 'px', bottom: (S.subY * H) + 'px', textAlign: S.subAlign, color: S.subColor, fontSize: fs + 'px',
+      webkitTextStroke: Math.max(1, fs * .16) + 'px ' + S.outColor, paintOrder: 'stroke fill', padding: '0 ' + (width * .06) + 'px' });
+    sub.textContent = (info.cues[0] && info.cues[0].text) || 'Así se verá tu subtítulo';
+  };
+  const syncControls = () => {
+    if (info.hasSubs) { $('#sColor').value = S.subColor; $('#sOut').value = S.outColor; $('#sAlign').value = S.subAlign; $('#sSize').value = S.subSize; $('#sY').value = S.subY; $('#sSizeT').textContent = Math.round(S.subSize * 100) + '%'; }
+    $('#cBri').value = S.bright; $('#cCon').value = S.contrast; $('#cSat').value = S.sat;
+    $$('#looks [data-look]').forEach(x => x.classList.toggle('active', x.dataset.look === S.look));
+    paintSub();
+  };
+  const bind = (sel, key, num) => { const el = $(sel); if (el) el.oninput = e => { S[key] = num ? +e.target.value : e.target.value; syncControls(); }; };
+  bind('#sColor', 'subColor'); bind('#sOut', 'outColor'); bind('#sAlign', 'subAlign'); bind('#sSize', 'subSize', 1); bind('#sY', 'subY', 1);
+  bind('#cBri', 'bright', 1); bind('#cCon', 'contrast', 1); bind('#cSat', 'sat', 1);
+  $$('#looks [data-look]').forEach(x => x.onclick = () => { S.look = x.dataset.look; syncControls(); });
+  $('#cReset').onclick = () => { Object.assign(S, { look: 'none', bright: 0, contrast: 1, sat: 1 }); syncControls(); };
+  vid.addEventListener('loadedmetadata', () => { paint(); paintSub(); }); paint(); syncControls();
   $('#aR').oninput = e => { a = Math.min(+e.target.value, b - 1); e.target.value = a; vid.currentTime = a; paint(); };
   $('#bR').oninput = e => { b = Math.max(+e.target.value, a + 1); e.target.value = b; vid.currentTime = Math.max(0, b - .1); paint(); };
   $('#setA').onclick = () => { a = Math.min(vid.currentTime, b - 1); $('#aR').value = a; paint(); };
@@ -297,7 +340,7 @@ async function openEditor(card) {
     const btn = $('#edApply'); btn.disabled = true; $('#edMsg').textContent = 'Aplicando... puede tardar un rato.';
     const cues = info.cues.map((c, i) => ({ start: c.start, end: c.end, text: $(`[data-c="${i}"]`).value }));
     try {
-      await api(`/api/jobs/${id}/clip/${n}/edit`, { method: 'POST', body: { trimStart: a, trimEnd: b, cropX: cx, cues: info.cues.length ? cues : undefined } });
+      await api(`/api/jobs/${id}/clip/${n}/edit`, { method: 'POST', body: { trimStart: a, trimEnd: b, cropX: cx, style: S, cues: info.cues.length ? cues : undefined } });
       const cu = await fetchBlob(`/api/jobs/${id}/clip/${n}`);
       card.querySelector('video').src = cu; card.querySelector('a').href = cu;
       toast('Clip actualizado ✅'); close();
