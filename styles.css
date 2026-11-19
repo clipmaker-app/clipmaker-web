@@ -92,3 +92,53 @@ input[type=range]{width:100%;accent-color:var(--y)}
 
 .hero-preview{max-width:820px;margin:14px auto 0}
 .hero-preview iframe,.hero-preview video{aspect-ratio:16/9;height:auto}
+
+/* ---------- Editor: estilo de subtítulos y color ---------- */
+.ed-sub{position:absolute;font-family:"DejaVu Sans",Arial,sans-serif;font-weight:800;line-height:1.15;pointer-events:none;box-sizing:border-box}
+.ed-h{margin:18px 0 4px;font-size:16px}
+.ed-row{align-items:flex-end}
+.ed-in{display:flex;flex-direction:column;gap:4px;margin:0;font-size:13px}
+.ed-in input[type=color]{width:54px;height:40px;padding:2px;border-radius:10px;background:#111;border:1px solid var(--line);cursor:pointer}
+.ed-in select{padding:10px;border-radius:10px;background:#111;color:#fff;border:1px solid var(--line)}
+.modal-box{max-width:900px}
+.ed-grid{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:20px;align-items:start}
+.ed-left{position:sticky;top:8px}
+.ed-stage.v{max-width:300px;margin:0 auto}
+@media(max-width:700px){
+  .ed-grid{grid-template-columns:1fr;gap:10px}
+  .ed-left{z-index:5;background:var(--card);padding-bottom:8px;box-shadow:0 10px 14px -6px rgba(0,0,0,.8)}
+  .ed-stage.v{max-width:150px}
+  .ed-left .muted{display:none}
+}
+
+/* ---------- Celular: más aire, letras y botones más grandes ---------- */
+input[type=checkbox]{width:22px;height:22px;flex:none;accent-color:var(--y)}
+@media(max-width:700px){
+  body{font-size:16px}
+  .muted{font-size:15px}
+  main{padding:14px 10px 50px}
+  .card{padding:16px 14px;border-radius:20px;margin-bottom:14px}
+  .owner-circle{position:static;display:inline-block;width:auto;height:auto;border-radius:99px;padding:6px 14px;margin:6px 0 10px;font-size:12px}
+  .chip{padding:13px 18px;min-height:46px}
+  .btn-main,.btn-dark{min-height:50px}
+  /* pantalla principal: sin cajas dentro de cajas */
+  .hero{padding:18px 12px;border-radius:20px;margin-bottom:14px}
+  .hero-title{font-size:22px;margin-bottom:14px}
+  .hero-box{padding:8px;border-radius:18px}
+  .hero-input{flex-direction:column;align-items:stretch;padding:8px;gap:8px}
+  .hero-ico{display:none}
+  .hero-input input[type=text]{width:100%;min-width:0;background:#0d0d0d;border:1px solid var(--line);border-radius:12px;padding:15px 14px}
+  .hero-go{width:100%;min-height:54px;font-size:17px}
+  .hero-actions{gap:2px}
+  .link-btn{padding:12px 10px;font-size:15px}
+  .opts{gap:8px}
+  .opt span{padding:12px 16px;font-size:15px}
+  .check{align-items:flex-start;font-size:15px;line-height:1.35;gap:10px}
+  .check input{margin-top:1px}
+  .row{gap:8px}
+  /* clips y editor */
+  .clip video{max-height:70vh}
+  .modal{padding:8px}
+  .modal-box{padding:14px;border-radius:16px}
+  .cue{flex-wrap:wrap}.cue span{min-width:100%}
+}
