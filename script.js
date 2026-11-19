@@ -137,7 +137,7 @@ $('#previewBtn').onclick = () => {
   sourceLink = l; sourceFile = null; sourceIsLive = false;
   const box = $('#preview');
   if (/\.(mp4|webm|mov)(\?|$)/i.test(l)) box.innerHTML = `<video controls src="${esc(l)}"></video>`;
-  else if (embedUrl(l)) box.innerHTML = `<iframe src="${esc(embedUrl(l))}" allowfullscreen></iframe>`;
+  else if (embedUrl(l)) box.innerHTML = `<iframe src="${esc(embedUrl(l))}" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture"></iframe>`;
   else box.innerHTML = `<p class="muted">No se puede mostrar este enlace aquí. Descarga el video y súbelo abajo.</p>`;
 };
 $('#file').onchange = e => {
